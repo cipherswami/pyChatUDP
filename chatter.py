@@ -29,7 +29,7 @@ def main():
         while True:
             try:
                 data, nodeAddr = sock.recvfrom(1024)
-                print(f"[{nodeIP}] : {data.decode('UTF-8')}")
+                print(f"\n[{nodeIP}] : {data.decode('UTF-8')}")
             except KeyboardInterrupt:
                 break
 
