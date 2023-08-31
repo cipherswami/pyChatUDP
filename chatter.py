@@ -5,8 +5,7 @@
 ############################################################
 
 # Macros
-nodeIP = "172.17.50.136"
-# nodeIP = input("Enter Node's IP: ")
+nodeIP = input("Enter Node's IP: ")
 nodePort = 8080
 
 # Libraries
