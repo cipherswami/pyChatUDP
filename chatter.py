@@ -19,7 +19,7 @@ def main():
         """Parent Process: Used for sending the messages"""
         while True:
             try:
-                msg = input("[127.0.0.1] : ")
+                msg = input("\n[127.0.0.1] : ")
                 sock.sendto(msg.encode('UTF-8'), (nodeIP, nodePort))
             except KeyboardInterrupt:
                 print("\n\n[!] Application terminated")
