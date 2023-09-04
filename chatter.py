@@ -6,7 +6,7 @@
 
 # Macros
 nodeIP = input("Enter Node's IP: ")
-nodePort = input("Enter Port: ")
+nodePort = int(input("Enter Port: "))
 doRun = True
 
 # Libraries
