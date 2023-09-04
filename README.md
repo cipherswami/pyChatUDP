@@ -20,8 +20,7 @@ UDP based python decentralized P2P chat application.
 1. The IP address and port number must be known beforehand.
 2. Communication is not encrypted and not reliable.
 
-# Contact
-+ Author: [Aravind Potluri](name-is-cipher.github.io)
-+ Email: <aravindswami135@gmail.com> 
+# Author
+#### Aravind Potluri \<aravindswami135@gmail.com\>
 
 
