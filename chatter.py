@@ -5,72 +5,80 @@
 ############################################################
 
 # Macros
-# nodeIP = input("Enter Node's IP: ")
-nodeIP = "172.23.203.197"
-nodePort = 8080
+nodeIP = input("Enter Node's IP: ")
+nodePort = input("Enter Port: ")
+doRun = True
 
 # Libraries
 import socket
 import threading
+import signal
 
-# Install non standard modules
-# requiredModules = ["keyboard"]
-# for module in requiredModules:
-#     try:
-#         importlib.import_module(module)
-#     except ImportError:
-#         print(f"[!] {module} not found. Attempting to install...")
-#         try:
-#             subprocess.check_call(['pip', 'install', module])
-#             print(f"[#] {module} has been successfully installed.")
-#             importlib.import_module(module)
-#         except Exception as e:
-#             print(f"[!] Failed to install {module}. Error: {str(e)}")
-#             exit()
-
-# Functions to be run as processes
-def receiveMsg(ip, port):
+# Functions to be run as threads
+def receiveMsg(sock, ip, port):
     """Used for receiving the messages"""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(("0.0.0.0", port))
-    while True:
+    while doRun:
         try:
             data, nodeAddr = sock.recvfrom(1024)
             if ip == nodeAddr[0]:
+                """To check if it is from the right source"""
                 print(f"\n[{nodeIP}] : {data.decode('UTF-8')}")
+            elif "127.0.0.1" == nodeAddr[0]:
+                """This is the termination signal"""
+                break
             else:
-                print("\n[!] Intrusion detected !!!")
+                """Intrusion check"""
+                print(f"\n[!] Intrusion detected: {nodeAddr}")
         except KeyboardInterrupt:
-            print("\n\n[!] Receiver Application terminated")
             break
     sock.close()
+    exit()
 
-def sendMsg(ip, port):
+def sendMsg(sock, ip, port):
     """Used for sending the messages"""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    while True: 
-        keyEvent = input()  
+    while doRun:  
         try:
+            keyEvent = input() 
             if keyEvent == "":
-                msg = input("[127.0.0.1] : ")
-                sock.sendto(msg.encode('UTF-8'), (ip, port))
+                try:
+                    msg = input("[127.0.0.1] : ")
+                    sock.sendto(msg.encode('UTF-8'), (ip, port))
+                except KeyboardInterrupt:
+                    break
         except KeyboardInterrupt:
-            print("\n\n[!] Sender Application terminated")
             break
+        except EOFError:
+            break
+    sock.sendto(msg.encode('UTF-8'), ('127.0.0.1', port)) # Termination signal
     sock.close()
+    exit()
+
+def handle_sigint(signum, frame):
+    """Function to handle SIGINT"""
+    global doRun
+    doRun = False
 
 if __name__ == "__main__":
     print("############# pyChatter ################")
+
+    # Creating Sockets
+    rxSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    txSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
     # Create separate processes for sending and receiving messages
-    rxProcess = threading.Thread(target=receiveMsg, args=(nodeIP,nodePort,))
-    txProcess = threading.Thread(target=sendMsg, args=(nodeIP, nodePort,))
-    try:
-        # Start the receiving and sending processes
-        rxProcess.start()
-        txProcess.start()
-        # Waiting for both processes to finish
-        rxProcess.join()
-        txProcess.join()
-    except KeyboardInterrupt:
-        print("\n\n[!] Application terminated")
-        exit()
+    rxProcess = threading.Thread(target=receiveMsg, args=(rxSock, nodeIP,nodePort,))
+    txProcess = threading.Thread(target=sendMsg, args=(txSock, nodeIP, nodePort,))
+
+    # Start the receiving and sending processes
+    txProcess.start()
+    rxProcess.start()
+
+    signal.signal(signal.SIGINT, handle_sigint)
+    
+    # Waiting for processes to join
+    rxProcess.join()
+    txProcess.join()
+
+    print("\n[!] Application terminated")
+    exit()
