@@ -28,7 +28,7 @@ def receiveMsg(sock, ip, port):
                 """This is the termination signal"""
                 break
             else:
-                """Intrusion check"""
+                """Intrusion"""
                 print(f"\n[!] Intrusion detected: {nodeAddr}")
         except KeyboardInterrupt:
             break
